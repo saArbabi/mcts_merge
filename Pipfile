@@ -8,13 +8,14 @@ verify_ssl = true
 [packages]
 ipykernel = "*"
 pandas = "*"
-matplotlib = "*"
 keras = "*"
 tensorflow-probability = "*"
 tensorflow = "*"
 tensorboard = "==2.3.0"
 tensorboard-plugin-wit = "==1.7.0"
 numpy = "*"
+dill = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.7"
