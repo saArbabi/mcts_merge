@@ -2,22 +2,40 @@ from models.core.train_eval.config_generator import genExpSeires
 config = {
  "model_config": {
      "learning_rate": 1e-3,
-     "enc_units": 20,
-     "dec_units": 20,
-     "layers_n": 2,
+     "enc_units": 100,
+     "dec_units": 100,
      "epochs_n": 50,
-     "batch_n": 128,
-     "components_n": 5
+     "components_n": 5,
+     "batch_size": 256,
+    "allowed_error": 0.0,
 },
-"data_config": {"step_size": 1,
-                "obsSequence_n": 20,
-                "pred_horizon": 20,
-                "m_s":["vel", "pc"],
-                "y_s":["vel", "dx", 'da', 'a_ratio'],
-                "Note": "cae setup - with condition: m_df[['vel','pc']], y_df[['vel','dx']]"
+"data_config": {"obs_n": 20,
+                "pred_step_n": 20,
+                "step_size": 1,
+                # "Note": "jerk as target"
+                "Note": "lat/long motion not considered jointly"
 },
 "exp_id": "NA",
-"Note": ""
+"Note": "NA"
 }
-series_id='series002'
+series_id='series082'
+# test_variables = {'pred_step_n':[3, 10]}
+# test_variables = {'allowed_error':[[0.7, 0.3], [0.4, 0.15], [0.2, 0.1], [0.1, 0.075]]}
+# genExpSeires(series_id=series_id, test_variables=test_variables, config=config)
+# genExpSeires(series_id=series_id, test_variable0s=test_variables, config=config)
 genExpSeires(series_id=series_id, test_variables=None, config=config)
+
+
+# ,
+# "series040exp004": {
+#     "exp_state": "NA",
+#     "epoch": 0,
+#     "train_loss": "NA",
+#     "val_loss": "NA"
+# },
+# "series040exp005": {
+#     "exp_state": "NA",
+#     "epoch": 0,
+#     "train_loss": "NA",
+#     "val_loss": "NA"
+# }
