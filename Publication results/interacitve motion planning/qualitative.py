@@ -7,13 +7,12 @@ reload(policy)
 from planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 import dill
 
-exp_to_evaluate = 'series081exp003'
+exp_to_evaluate = 'series077exp001'
 config = loadConfig(exp_to_evaluate)
 traffic_density = ''
 test_data = TestdataObj(traffic_density, config)
 
-model = MergePolicy(test_data, config)
-eval_obj = ModelEvaluation(model, test_data, config)
+
 # %%
 """Visualise distributions
 """
@@ -56,6 +55,10 @@ for time_step in range(40):
 
 
 # %%
+reload(policy)
+from planner.policy import TestdataObj, MergePolicy, ModelEvaluation
+model = MergePolicy(test_data, config)
+eval_obj = ModelEvaluation(model, test_data, config)
 
 """ scene evolution plots
 """
@@ -90,7 +93,7 @@ fadj_speed_indx = eval_obj.gen_model.indx_fadj['vel']
 y_dx_indx = eval_obj.gen_model.indx_y['dx']
 f_dx_indx = eval_obj.gen_model.indx_f['dx']
 fadj_dx_indx = eval_obj.gen_model.indx_fadj['dx']
-fig, axs = plt.subplots(3, 5, figsize=(30,12))
+fig, axs = plt.subplots(3, 5, figsize=(18,9))
 fig.tight_layout()
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)
 time_frame = 0
@@ -104,8 +107,19 @@ for time_step in [19, 29, 39]:
                                                     pred_h=pred_h)
 
 
-    actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(), cond_i.copy()], bc_der_i, traj_n=100, pred_h=pred_h)
-    best_traj = choose_traj(actions, prob_mlon, prob_mlat)
+    actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(),
+                        cond_i.copy()], bc_der_i, traj_n=10000, pred_h=pred_h)
+    # best_traj = choose_traj(actions, prob_mlon, prob_mlat)
+    # chooose traj
+    discount_factor = 0.9
+    gamma = np.power(discount_factor, np.array(range(0,21)))
+
+    jerk_m_long = actions[:,:,0]**2
+    likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
+    discounted_cost = -80*np.sum(jerk_m_long*gamma, axis=1) + likelihoods
+    # likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
+    best_traj = np.where(discounted_cost==max(discounted_cost))[0][0]
+
     titles = [
             'Vehicle $v_{0}$,'+
                 ' $\dot x_{0}:$'+str(round(st_arr[time_step, m_speed_indx], 1))+'$ms^{-1},$',
@@ -129,15 +143,13 @@ for time_step in [19, 29, 39]:
         axs[time_frame, ax_i].spines['top'].set_visible(False)
         axs[time_frame, ax_i].xaxis.get_major_ticks()[1].label1.set_visible(False)
         axs[time_frame, ax_i].xaxis.get_major_ticks()[2].label1.set_visible(False)
-        axs[time_frame, ax_i].xaxis.get_major_ticks()[3].label1.set_visible(False)
-        axs[time_frame, ax_i].grid()
+        axs[time_frame, ax_i].grid(alpha=0.3)
         if ax_i == 1:
-            axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]')
-            # axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]', labelpad=-5)
+            axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]', labelpad=-3)
         else:
-            axs[time_frame, ax_i].set_ylabel('Longitudinal action [$ms^{-2}$]')
-            # axs[time_frame, ax_i].set_ylabel('Longitudinal action [$ms^{-2}$]', labelpad=-5)
-        axs[time_frame, ax_i].set_xlabel('Time [s]')
+            axs[time_frame, ax_i].set_ylabel('Longitudinal action [$ms^{-2}$]', labelpad=-3)
+        axs[time_frame, ax_i].set_xlabel('Time [s]', labelpad=-8)
+        # axs[time_frame, ax_i].set_xlabel('Time [s]')
         #
         # if time_frame!=2:
         #     # axs[time_frame, ax_i].set_yticks([])

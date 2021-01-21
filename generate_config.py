@@ -10,15 +10,15 @@ config = {
     "allowed_error": 0.0,
 },
 "data_config": {"obs_n": 20,
-                "pred_step_n": 20,
-                "step_size": 1,
+                "pred_step_n": 7,
+                "step_size": 3,
                 # "Note": "jerk as target"
                 "Note": "lat/long motion not considered jointly"
 },
 "exp_id": "NA",
 "Note": "NA"
 }
-series_id='series082'
+series_id='series083'
 # test_variables = {'pred_step_n':[3, 10]}
 # test_variables = {'allowed_error':[[0.7, 0.3], [0.4, 0.15], [0.2, 0.1], [0.1, 0.075]]}
 # genExpSeires(series_id=series_id, test_variables=test_variables, config=config)
