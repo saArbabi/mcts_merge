@@ -53,8 +53,13 @@ for time_step in range(40):
 
     plt.grid()
 
+# %%
+prob_mlon.shape
+for j in range(20):
+    plt.plot(prob_mlon[j,:,:])
 
 # %%
+plt.rcParams.update({'font.size': 14})
 reload(policy)
 from planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 model = MergePolicy(test_data, config)
@@ -95,46 +100,49 @@ f_dx_indx = eval_obj.gen_model.indx_f['dx']
 fadj_dx_indx = eval_obj.gen_model.indx_fadj['dx']
 fig, axs = plt.subplots(3, 5, figsize=(18,9))
 fig.tight_layout()
-fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)
+fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.1)
 time_frame = 0
 for time_step in [19, 29, 39]:
-# for time_step in [19]:
-    st_i, cond_i, bc_der_i, history_i, _, targ_i = eval_obj.sceneSetup(st_seq,
-                                                    cond_seq,
-                                                    st_arr,
-                                                    targ_arr,
-                                                    current_step=time_step,
-                                                    pred_h=pred_h)
+    # for time_step in [19]:
+    """
+        st_i, cond_i, bc_der_i, history_i, _, targ_i = eval_obj.sceneSetup(st_seq,
+                                                        cond_seq,
+                                                        st_arr,
+                                                        targ_arr,
+                                                        current_step=time_step,
+                                                        pred_h=pred_h)
 
 
-    actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(),
-                        cond_i.copy()], bc_der_i, traj_n=10000, pred_h=pred_h)
-    # best_traj = choose_traj(actions, prob_mlon, prob_mlat)
-    # chooose traj
-    discount_factor = 0.9
-    gamma = np.power(discount_factor, np.array(range(0,21)))
+        actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(),
+                            cond_i.copy()], bc_der_i, traj_n=50, pred_h=pred_h)
+        # best_traj = choose_traj(actions, prob_mlon, prob_mlat)
+        # chooose traj
+        discount_factor = 0.9
+        gamma = np.power(discount_factor, np.array(range(0,21)))
 
-    jerk_m_long = actions[:,:,0]**2
-    likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
-    discounted_cost = -80*np.sum(jerk_m_long*gamma, axis=1) + likelihoods
-    # likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
-    best_traj = np.where(discounted_cost==max(discounted_cost))[0][0]
+        jerk_m_long = actions[:,:,0]**2
+        likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
+        discounted_cost = -80*np.sum(jerk_m_long*gamma, axis=1) + likelihoods
+        best_traj = np.where(discounted_cost==max(discounted_cost))[0][0]
 
-    titles = [
-            'Vehicle $v_{0}$,'+
-                ' $\dot x_{0}:$'+str(round(st_arr[time_step, m_speed_indx], 1))+'$ms^{-1},$',
-            'Vehicle $v_{0}$,'+
-                ' $\Delta y_{0}$:'+str(round(st_arr[time_step, m_pc_indx], 1))+'$m$',
-            'Vehicle $v_{1}$,'+
-                ' $\dot x_{1}:$'+str(round(st_arr[time_step, y_speed_indx], 1))+'$ms^{-1}$,'+
-                ' $\Delta x_{1}$:'+str(round(st_arr[time_step, y_dx_indx], 1))+'$m$',
-            'Vehicle $v_{2}$,'+
-                ' $\dot x_{2}:$'+str(round(st_arr[time_step, fadj_speed_indx], 1))+'$ms^{-1}$,'+
-                ' $\Delta x_{2}$:'+str(round(st_arr[time_step, fadj_dx_indx], 1))+'$m$',
-            'Vehicle $v_{3}$,'+
-                ' $\dot x_{3}:$'+str(round(st_arr[time_step, f_speed_indx], 1))+'$ms^{-1}$,'+
-                ' $\Delta x_{3}$:'+str(round(st_arr[time_step, f_dx_indx], 1))+'$m$'
-            ]
+    """
+    #
+    # titles = [
+    #         'Vehicle $v_{0}$,'+
+    #             ' $\dot x_{0}:$'+str(round(st_arr[time_step, m_speed_indx], 1))+'$ms^{-1},$',
+    #         'Vehicle $v_{0}$,'+
+    #             ' $\Delta y_{0}$:'+str(round(st_arr[time_step, m_pc_indx], 1))+'$m$',
+    #         'Vehicle $v_{1}$,'+
+    #             ' $\dot x_{1}:$'+str(round(st_arr[time_step, y_speed_indx], 1))+'$ms^{-1}$,'+
+    #             ' $\Delta x_{1}$:'+str(round(st_arr[time_step, y_dx_indx], 1))+'$m$',
+    #         'Vehicle $v_{2}$,'+
+    #             ' $\dot x_{2}:$'+str(round(st_arr[time_step, fadj_speed_indx], 1))+'$ms^{-1}$,'+
+    #             ' $\Delta x_{2}$:'+str(round(st_arr[time_step, fadj_dx_indx], 1))+'$m$',
+    #         'Vehicle $v_{3}$,'+
+    #             ' $\dot x_{3}:$'+str(round(st_arr[time_step, f_speed_indx], 1))+'$ms^{-1}$,'+
+    #             ' $\Delta x_{3}$:'+str(round(st_arr[time_step, f_dx_indx], 1))+'$m$'
+    #         ]
+
 
     for ax_i in range(5):
         axs[time_frame, ax_i].set_ylim([-2,2])
@@ -142,13 +150,13 @@ for time_step in [19, 29, 39]:
         axs[time_frame, ax_i].spines['right'].set_visible(False)
         axs[time_frame, ax_i].spines['top'].set_visible(False)
         axs[time_frame, ax_i].xaxis.get_major_ticks()[1].label1.set_visible(False)
-        axs[time_frame, ax_i].xaxis.get_major_ticks()[2].label1.set_visible(False)
+        # axs[time_frame, ax_i].xaxis.get_major_ticks()[2].label1.set_visible(False)
         axs[time_frame, ax_i].grid(alpha=0.3)
-        if ax_i == 1:
-            axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]', labelpad=-3)
-        else:
-            axs[time_frame, ax_i].set_ylabel('Longitudinal action [$ms^{-2}$]', labelpad=-3)
-        axs[time_frame, ax_i].set_xlabel('Time [s]', labelpad=-8)
+        # if ax_i == 1:
+        #     axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]', labelpad=-3)
+        # else:
+        #     axs[time_frame, ax_i].set_ylabel('Longitudinal action [$ms^{-2}$]', labelpad=-3)
+        # axs[time_frame, ax_i].set_xlabel('Time [s]', labelpad=-8)
         # axs[time_frame, ax_i].set_xlabel('Time [s]')
         #
         # if time_frame!=2:
@@ -158,7 +166,7 @@ for time_step in [19, 29, 39]:
     for act_n in range(5):
 
         axs[time_frame, act_n].fill_between([-1.9,0],[-3,-3], [3,3], color='lightgrey')
-        axs[time_frame, act_n].title.set_text(titles[act_n])
+        # axs[time_frame, act_n].title.set_text(titles[act_n])
         axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), targ_i[:, act_n], color='red', linestyle='--')
         axs[time_frame, act_n].plot(np.arange(-1.9, 0.1, 0.1), history_i[:, act_n], color='black', linewidth=2)
         if act_n < 2:
@@ -174,4 +182,4 @@ for time_step in [19, 29, 39]:
                 axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3)
                 # axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3, alpha=0.3)
     time_frame += 1
-# plt.savefig("scene_evolution.png", dpi=200)
+plt.savefig("scene_evolution.png", dpi=500)
