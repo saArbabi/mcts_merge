@@ -16,6 +16,7 @@ tensorboard-plugin-wit = "==1.7.0"
 numpy = "*"
 dill = "*"
 matplotlib = "*"
+gym = "*"
 
 [requires]
 python_version = "3.7"

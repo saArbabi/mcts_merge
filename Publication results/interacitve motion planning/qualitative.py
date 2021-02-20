@@ -2,9 +2,9 @@ from models.core.train_eval.utils import loadConfig
 import matplotlib.pyplot as plt
 from importlib import reload
 import numpy as np
-from planner import policy
+from planner.action_planner import policy
 reload(policy)
-from planner.policy import TestdataObj, MergePolicy, ModelEvaluation
+from planner.action_planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 import dill
 
 exp_to_evaluate = 'series077exp001'
@@ -61,7 +61,7 @@ for j in range(20):
 # %%
 plt.rcParams.update({'font.size': 14})
 reload(policy)
-from planner.policy import TestdataObj, MergePolicy, ModelEvaluation
+from planner.action_planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 model = MergePolicy(test_data, config)
 eval_obj = ModelEvaluation(model, test_data, config)
 
@@ -104,29 +104,33 @@ fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hs
 time_frame = 0
 for time_step in [19, 29, 39]:
     # for time_step in [19]:
-    """
-        st_i, cond_i, bc_der_i, history_i, _, targ_i = eval_obj.sceneSetup(st_seq,
-                                                        cond_seq,
-                                                        st_arr,
-                                                        targ_arr,
-                                                        current_step=time_step,
-                                                        pred_h=pred_h)
+
+    st_i, cond_i, bc_der_i, history_i, _, targ_i = eval_obj.sceneSetup(st_seq,
+                                                    cond_seq,
+                                                    st_arr,
+                                                    targ_arr,
+                                                    current_step=time_step,
+                                                    pred_h=pred_h)
 
 
-        actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(),
-                            cond_i.copy()], bc_der_i, traj_n=50, pred_h=pred_h)
-        # best_traj = choose_traj(actions, prob_mlon, prob_mlat)
-        # chooose traj
-        discount_factor = 0.9
-        gamma = np.power(discount_factor, np.array(range(0,21)))
+    actions, prob_mlon, prob_mlat = eval_obj.policy.get_actions([st_i.copy(),
+                        cond_i.copy()], bc_der_i, traj_n=200, pred_h=pred_h)
+    # best_traj = choose_traj(actions, prob_mlon, prob_mlat)
+    # chooose traj
+    discount_factor = 0.9
+    gamma = np.power(discount_factor, np.array(range(0,21)))
+    jerk = actions[:,:,0]**2
+    jerk_norm = jerk/np.repeat([np.max(jerk, axis=0)], 200, axis=0)
+    likelihoods = np.prod(prob_mlon, axis=1).flatten()+np.prod(prob_mlat, axis=1).flatten()
 
-        jerk_m_long = actions[:,:,0]**2
-        likelihoods = np.sum(prob_mlon, axis=1).flatten()+np.sum(prob_mlat, axis=1)[:,:].flatten()
-        discounted_cost = -80*np.sum(jerk_m_long*gamma, axis=1) + likelihoods
-        best_traj = np.where(discounted_cost==max(discounted_cost))[0][0]
+    j = np.sum(jerk_norm*gamma, axis=1)
+    j_weight = 1
+    likelihood_weight = 6
 
-    """
-    #
+    discounted_cost = -j_weight*j  + likelihood_weight*likelihoods/max(likelihoods)
+    best_traj = np.where(discounted_cost==max(discounted_cost))[0][0]
+
+
     # titles = [
     #         'Vehicle $v_{0}$,'+
     #             ' $\dot x_{0}:$'+str(round(st_arr[time_step, m_speed_indx], 1))+'$ms^{-1},$',
@@ -142,6 +146,7 @@ for time_step in [19, 29, 39]:
     #             ' $\dot x_{3}:$'+str(round(st_arr[time_step, f_speed_indx], 1))+'$ms^{-1}$,'+
     #             ' $\Delta x_{3}$:'+str(round(st_arr[time_step, f_dx_indx], 1))+'$m$'
     #         ]
+    # print(titles)
 
 
     for ax_i in range(5):
@@ -167,13 +172,13 @@ for time_step in [19, 29, 39]:
 
         axs[time_frame, act_n].fill_between([-1.9,0],[-3,-3], [3,3], color='lightgrey')
         # axs[time_frame, act_n].title.set_text(titles[act_n])
-        axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), targ_i[:, act_n], color='red', linestyle='--')
+        axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), targ_i[:, act_n], color='red')
         axs[time_frame, act_n].plot(np.arange(-1.9, 0.1, 0.1), history_i[:, act_n], color='black', linewidth=2)
         if act_n < 2:
             trajs = actions[:,:,act_n]
             st_dev = np.std(trajs, axis=0)
             avg_traj = np.mean(trajs, axis=0)
-            axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[best_traj,:,act_n], color='green', linestyle='--')
+            axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[best_traj,:,act_n], color='green')
             axs[time_frame, act_n].fill_between(np.arange(0, pred_h+0.1, 0.1), avg_traj+st_dev, avg_traj-st_dev, color='orange', alpha=0.3)
             # axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), avg_traj, color='purple')
 
@@ -182,4 +187,4 @@ for time_step in [19, 29, 39]:
                 axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3)
                 # axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3, alpha=0.3)
     time_frame += 1
-plt.savefig("scene_evolution.png", dpi=500)
+# plt.savefig("scene_evolution.png", dpi=500)
