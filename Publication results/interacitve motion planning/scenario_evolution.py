@@ -1,16 +1,8 @@
-from models.core.train_eval.utils import loadConfig
 import matplotlib.pyplot as plt
 from importlib import reload
 import numpy as np
-from planner.action_planner import policy
-reload(policy)
-from planner.action_planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 import dill
 
-exp_to_evaluate = 'series077exp001'
-config = loadConfig(exp_to_evaluate)
-traffic_density = ''
-test_data = TestdataObj(traffic_density, config)
 
 # %%
 """
@@ -19,11 +11,15 @@ lead vehicle
 class Viewer():
     def __init__(self, env_config):
         self.env_config  = env_config
-        self.fig = plt.figure(figsize=(20, 20))
+        self.fig = plt.figure(figsize=(20, 15))
+        plt.rcParams.update({'font.size': 14})
+        self.fig.subplots_adjust(left=None, bottom=0.15, right=None, \
+                                top=None, wspace=None, hspace=0.3)
+
         self.env_ax = self.fig.add_subplot(411, facecolor='lightgrey')
         self.v_ax = self.fig.add_subplot(412)
-        self.alat_ax = self.fig.add_subplot(413)
-        self.along_ax = self.fig.add_subplot(414)
+        self.along_ax = self.fig.add_subplot(413)
+        self.alat_ax = self.fig.add_subplot(414)
 
 
     def draw_road(self, ax):
@@ -40,7 +36,9 @@ class Viewer():
                 lane_cor += self.env_config['lane_width']
         ax.set_xlim(320, 400)
                 # ax.plot(range(len(veh.x_track)), veh.y_track, color='red')
-        ax.
+        ax.set_xlabel('Long. position ($m$)')
+        ax.set_ylabel('Lateral position ($m$)')
+
     def draw_v_profile(self, ax, vehicles):
         for veh in vehicles:
             if veh.id == 'cae':
@@ -51,8 +49,10 @@ class Viewer():
                 # print(veh.v_track)
 
             # print(str(veh.id), len(veh.v_track))
-
-        # ax.set_xlim(0, time[-1])
+        ax.set_ylabel('Long. speed ($ms^{-1}$)')
+        ax.set_xlabel('Time ($s$)')
+        ax.set_xlim(0, 5)
+        ax.yaxis.set_ticks(np.arange(10.5, 13, 0.5))
 
         ax.grid(alpha=0.8)
 
@@ -63,7 +63,11 @@ class Viewer():
             elif veh.id == 'm':
                 ax.plot(self.time, veh.along_track, color='red')
         # ax.set_xlim(0, 7)
+        ax.yaxis.set_ticks(np.arange(-2, 2, 0.5))
+        ax.set_xlim(0, 5)
         ax.grid(alpha=0.8)
+        ax.set_ylabel('Long. acceleration ($ms^{-2}$)')
+        ax.set_xlabel('Time ($s$)')
 
     def draw_alat_profile(self, ax, vehicles):
         for veh in vehicles:
@@ -73,6 +77,10 @@ class Viewer():
                 ax.plot(self.time, veh.alat_track, color='red')
         # ax.set_xlim(0, time[-1])
         ax.grid(alpha=0.8)
+        ax.set_xlim(0, 5)
+        ax.yaxis.set_ticks(np.arange(-0.5, 1.6, 0.5))
+        ax.set_ylabel('Lateral speed ($ms^{-1}$)')
+        ax.set_xlabel('Time ($s$)')
 
     def draw_xy_profile(self, ax, vehicles):
         for veh in vehicles:
@@ -95,6 +103,8 @@ class Viewer():
         self.draw_v_profile(self.v_ax, vehicles)
         self.draw_along_profile(self.along_ax, vehicles)
         self.draw_alat_profile(self.alat_ax, vehicles)
+        plt.savefig("sim_evolution.png", dpi=1000)
+
         plt.show()
 
 class Env():
@@ -320,6 +330,10 @@ class ObservationModule():
 
         self.obs_history = np.array(obs_history)
 
+from models.core.train_eval.utils import loadConfig
+import os
+os.getcwd()
+# os.chdir('../')
 from planner import model_evaluator
 reload(model_evaluator)
 from planner import policy
@@ -344,9 +358,8 @@ st_i, cond_i, bc_der_i, history_i, _, targ_i = eval_obj.sceneSetup(st_seq,
                                                 targ_arr,
                                                 current_step=19,
                                                 pred_h=2)
-
-veh_cae = CAEVehicle(lane_id=2, x=320, v=st_arr[19, env.indx_m['vel']], pc=st_arr[19, env.indx_m['pc']], id='cae')
 env = Env()
+veh_cae = CAEVehicle(lane_id=2, x=320, v=st_arr[19, env.indx_m['vel']], pc=st_arr[19, env.indx_m['pc']], id='cae')
 env.obs_module = ObservationModule(st_arr.copy(), targ_arr, 19, test_data.data_obj)
 veh_cae.policy = model
 veh_cae.policy.replanning_rate = 5 # every n steps, replan
@@ -368,15 +381,16 @@ env.veh_y = veh_y
 env.veh_f = veh_f
 env.veh_fadj = veh_fadj
 env.eval_obj = eval_obj
-
+veh_m.x - veh_fadj.x
 obs_history, action_conditional = env.reset()
 np.set_printoptions(suppress=True)
-
+bc = bc_der_i
 for i in range(10):
     executable_plan, bc = veh_cae.act(obs_history.copy(), action_conditional.copy(), bc.copy())
     obs_history, action_conditional = env.step(executable_plan)
 env.render()
 
+# plt.savefig("scene_evolution.png", dpi=500)
 
 
 # %%
