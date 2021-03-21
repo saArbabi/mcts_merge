@@ -1,3 +1,9 @@
+
+import os
+os.getcwd()
+# os.chdir('../')
+
+
 from models.core.train_eval.utils import loadConfig
 import matplotlib.pyplot as plt
 from importlib import reload
@@ -160,7 +166,7 @@ axs[1].set_xlabel('Time horizon (s)')
 axs[1].set_ylabel('$\dot y_{v0}$ RWSE [$ms^{-1}$] ')
 axs[1].set_ylim([0,1.75])
 axs[1].yaxis.set_ticks(np.arange(0, 1.76, 0.25))
-legends = ['$T_{m}=1$','$T_{m}=3$','$T_{m}=7$', '$T_{m}=10$']
+legends = ['$N=1$','$N=3$','$N=7$', '$N=10$']
 for key in range(2):
     for exp_name in exp_names:
         axs[key].plot(np.arange(0,2.1,0.1), rwses[exp_name][considered_states[key]])
@@ -176,10 +182,11 @@ plt.savefig("horizon_effect.png", dpi=500)
 fig, axs = plt.subplots(1, 2, figsize=(9,4))
 fig.subplots_adjust(left=None, bottom=0.15, right=None, top=None, wspace=0.3, hspace=None)
 
+
 exps = [
-        'series081exp002', # 0.3s
-        'series082exp001', #
         'series082exp002', #
+        'series082exp001', #
+        'series081exp002', # 0.3s
         ]
 rwses = {}
 for exp_i in range(len(exps)):
@@ -192,7 +199,7 @@ exp_names = []
 for exp in exps:
     for density in densities:
         exp_names.append(exp+density)
-legends = ['$\Delta t_{m}=0.1s$', '$\Delta t_{m}=0.2s$','$\Delta t_{m}=0.3s$']
+legends = ['$\delta t=0.1s$', '$\delta t=0.2s$','$\delta t=0.3s$']
 axs[0].set_xlabel('Time horizon (s)')
 axs[0].set_ylabel('$\dot x_{v0}$ RWSE [$ms^{-1}$] ')
 axs[0].set_ylim([0,1.75])

@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 from importlib import reload
 import numpy as np
 import dill
-
-
 # %%
 """
 lead vehicle
@@ -11,15 +9,19 @@ lead vehicle
 class Viewer():
     def __init__(self, env_config):
         self.env_config  = env_config
-        self.fig = plt.figure(figsize=(20, 15))
+        self.fig_scene = plt.figure(figsize=(10, 9))
+        self.fig_profiles = plt.figure(figsize=(10, 10))
         plt.rcParams.update({'font.size': 14})
-        self.fig.subplots_adjust(left=None, bottom=0.15, right=None, \
+        self.fig_scene.subplots_adjust(left=None, bottom=0.15, right=None, \
                                 top=None, wspace=None, hspace=0.3)
-
-        self.env_ax = self.fig.add_subplot(411, facecolor='lightgrey')
-        self.v_ax = self.fig.add_subplot(412)
-        self.along_ax = self.fig.add_subplot(413)
-        self.alat_ax = self.fig.add_subplot(414)
+        self.fig_profiles.subplots_adjust(left=None, bottom=0.15, right=None, \
+                                top=None, wspace=None, hspace=0.3)
+        self.env_ax_1 = self.fig_scene.add_subplot(311, facecolor='lightgrey')
+        self.env_ax_2 = self.fig_scene.add_subplot(312, facecolor='lightgrey')
+        self.env_ax_3 = self.fig_scene.add_subplot(313, facecolor='lightgrey')
+        self.v_ax = self.fig_profiles.add_subplot(311)
+        self.along_ax = self.fig_profiles.add_subplot(312)
+        self.alat_ax = self.fig_profiles.add_subplot(313)
 
 
     def draw_road(self, ax):
@@ -36,7 +38,7 @@ class Viewer():
                 lane_cor += self.env_config['lane_width']
         ax.set_xlim(320, 400)
                 # ax.plot(range(len(veh.x_track)), veh.y_track, color='red')
-        ax.set_xlabel('Long. position ($m$)')
+        ax.set_xlabel(' Longitudinal position ($m$)')
         ax.set_ylabel('Lateral position ($m$)')
 
     def draw_v_profile(self, ax, vehicles):
@@ -51,7 +53,7 @@ class Viewer():
             # print(str(veh.id), len(veh.v_track))
         ax.set_ylabel('Long. speed ($ms^{-1}$)')
         ax.set_xlabel('Time ($s$)')
-        ax.set_xlim(0, 5)
+        ax.set_xlim(0, 6)
         ax.yaxis.set_ticks(np.arange(10.5, 13, 0.5))
 
         ax.grid(alpha=0.8)
@@ -64,7 +66,7 @@ class Viewer():
                 ax.plot(self.time, veh.along_track, color='red')
         # ax.set_xlim(0, 7)
         ax.yaxis.set_ticks(np.arange(-2, 2, 0.5))
-        ax.set_xlim(0, 5)
+        ax.set_xlim(0, 6)
         ax.grid(alpha=0.8)
         ax.set_ylabel('Long. acceleration ($ms^{-2}$)')
         ax.set_xlabel('Time ($s$)')
@@ -77,35 +79,54 @@ class Viewer():
                 ax.plot(self.time, veh.alat_track, color='red')
         # ax.set_xlim(0, time[-1])
         ax.grid(alpha=0.8)
-        ax.set_xlim(0, 5)
+        ax.set_xlim(0, 6)
         ax.yaxis.set_ticks(np.arange(-0.5, 1.6, 0.5))
         ax.set_ylabel('Lateral speed ($ms^{-1}$)')
         ax.set_xlabel('Time ($s$)')
 
-    def draw_xy_profile(self, ax, vehicles):
-        for veh in vehicles:
-            if veh.id == 'cae':
-                ax.plot(veh.x_track, veh.y_track, color='green')
-            elif veh.id == 'm':
-                ax.plot(veh.x_track, veh.y_track, color='red')
-            elif veh.id == 'y':
-                ax.scatter(veh.x_track[-1], veh.y_track[-1], color='grey')
-            else:
-                ax.scatter(veh.x_track[-1], veh.y_track[-1], color='grey')
+    def draw_xy_profile(self, axs, vehicles):
+        chunk = 0
+        chunk_step = int(len(vehicles[0].x_track)/3)
+        for ax in axs:
+            for veh in vehicles:
+                veh_x = veh.x_track[0: chunk+chunk_step]
+                veh_y = veh.y_track[0: chunk+chunk_step]
+
+                if veh.id == 'cae':
+                    ax.plot(veh_x, veh_y, color='green')
+                elif veh.id == 'm':
+                    ax.plot(veh_x, veh_y, color='red')
+                elif veh.id == 'y':
+                    ax.scatter(veh_x[-1], veh_y[-1], color='grey')
+                else:
+                    ax.scatter(veh_x[-1], veh_y[-1], color='grey')
+
+            chunk += chunk_step
 
     def update_plots(self, vehicles):
         self.time = [0]
         for t in range(len(vehicles[0].x_track)-1):
             self.time.append(self.time[-1]+0.1)
 
-        self.draw_road(self.env_ax)
-        self.draw_xy_profile(self.env_ax, vehicles)
+
+
+        self.draw_road(self.env_ax_1)
+        self.draw_road(self.env_ax_2)
+        self.draw_road(self.env_ax_3)
+        self.draw_xy_profile([self.env_ax_1,
+                                self.env_ax_2,
+                                self.env_ax_3],
+                                vehicles)
+        self.fig_scene.savefig("env_evolution.png", dpi=500, bbox_inches = 'tight',
+        pad_inches = 0)
+        # plt.close()
         self.draw_v_profile(self.v_ax, vehicles)
         self.draw_along_profile(self.along_ax, vehicles)
         self.draw_alat_profile(self.alat_ax, vehicles)
-        plt.savefig("sim_evolution.png", dpi=1000)
-
-        plt.show()
+        self.fig_profiles.savefig("env_profiles.png", dpi=500, bbox_inches = 'tight',
+        pad_inches = 0)
+        # plt.close()
+                # plt.show()
 
 class Env():
     def __init__(self):
@@ -362,7 +383,7 @@ env = Env()
 veh_cae = CAEVehicle(lane_id=2, x=320, v=st_arr[19, env.indx_m['vel']], pc=st_arr[19, env.indx_m['pc']], id='cae')
 env.obs_module = ObservationModule(st_arr.copy(), targ_arr, 19, test_data.data_obj)
 veh_cae.policy = model
-veh_cae.policy.replanning_rate = 5 # every n steps, replan
+veh_cae.policy.replanning_rate = 3 # every n steps, replan
 ###
 veh_m = HumanVehicle(lane_id=2, x=320, state_arr=st_arr, state_indx=env.indx_m, id='m')
 ###
@@ -382,10 +403,13 @@ env.veh_f = veh_f
 env.veh_fadj = veh_fadj
 env.eval_obj = eval_obj
 veh_m.x - veh_fadj.x
+veh_m.x - veh_y.x
+len(veh_m.x_track)
+veh_y.x
 obs_history, action_conditional = env.reset()
 np.set_printoptions(suppress=True)
 bc = bc_der_i
-for i in range(10):
+for i in range(18):
     executable_plan, bc = veh_cae.act(obs_history.copy(), action_conditional.copy(), bc.copy())
     obs_history, action_conditional = env.step(executable_plan)
 env.render()
