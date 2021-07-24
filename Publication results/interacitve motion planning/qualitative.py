@@ -2,11 +2,16 @@ from models.core.train_eval.utils import loadConfig
 import matplotlib.pyplot as plt
 from importlib import reload
 import numpy as np
-from planner.action_planner import policy
-reload(policy)
-from planner.action_planner.policy import TestdataObj, MergePolicy, ModelEvaluation
+from planner.policy import MergePolicy
+from planner import policy
+
+from planner.model_evaluator import ModelEvaluation
+from planner.test_data_handler import TestdataObj
 import dill
 
+import os
+# os.chdir('../')
+os.getcwd()
 exp_to_evaluate = 'series077exp001'
 config = loadConfig(exp_to_evaluate)
 traffic_density = ''
@@ -60,8 +65,6 @@ for j in range(20):
 
 # %%
 plt.rcParams.update({'font.size': 14})
-reload(policy)
-from planner.action_planner.policy import TestdataObj, MergePolicy, ModelEvaluation
 model = MergePolicy(test_data, config)
 eval_obj = ModelEvaluation(model, test_data, config)
 
@@ -100,7 +103,7 @@ f_dx_indx = eval_obj.gen_model.indx_f['dx']
 fadj_dx_indx = eval_obj.gen_model.indx_fadj['dx']
 fig, axs = plt.subplots(3, 5, figsize=(18,9))
 fig.tight_layout()
-fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.1)
+fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.15, hspace=0.3)
 time_frame = 0
 for time_step in [19, 29, 39]:
     # for time_step in [19]:
@@ -156,7 +159,7 @@ for time_step in [19, 29, 39]:
         axs[time_frame, ax_i].spines['top'].set_visible(False)
         axs[time_frame, ax_i].xaxis.get_major_ticks()[1].label1.set_visible(False)
         # axs[time_frame, ax_i].xaxis.get_major_ticks()[2].label1.set_visible(False)
-        axs[time_frame, ax_i].grid(alpha=0.3)
+        axs[time_frame, ax_i].grid(axis='y', alpha=0.3)
         # if ax_i == 1:
         #     axs[time_frame, ax_i].set_ylabel('Lateral action [$ms^{-1}$]', labelpad=-3)
         # else:
@@ -187,4 +190,4 @@ for time_step in [19, 29, 39]:
                 axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3)
                 # axs[time_frame, act_n].plot(np.arange(0, pred_h+0.1, 0.1), actions[trj,:,act_n], color='grey', linewidth=0.3, alpha=0.3)
     time_frame += 1
-# plt.savefig("scene_evolution.png", dpi=500)
+plt.savefig("scene_evolution.png", dpi=500)

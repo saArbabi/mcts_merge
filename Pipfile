@@ -17,6 +17,7 @@ numpy = "*"
 dill = "*"
 matplotlib = "*"
 gym = "*"
+jupyter = "*"
 
 [requires]
 python_version = "3.7"

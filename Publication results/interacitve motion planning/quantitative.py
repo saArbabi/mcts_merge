@@ -2,8 +2,10 @@
 import os
 os.getcwd()
 # os.chdir('../')
-
-
+# os.chdir('./mcts_merge')
+'C:\\Users\\sa00443\\OneDrive - University of Surrey\\190805 OneDrive Backup\\Implementations\\mcts_merge\\sim'
+os.getcwd()
+'C:\\Users\\sa00443\\OneDrive - University of Surrey\\190805 OneDrive Backup\\Implementations\\mcts_merge'
 from models.core.train_eval.utils import loadConfig
 import matplotlib.pyplot as plt
 from importlib import reload
@@ -158,12 +160,12 @@ for exp in exps:
     for density in densities:
         exp_names.append(exp+density)
 axs[0].set_xlabel('Time horizon (s)')
-axs[0].set_ylabel('$\dot x_{v0}$ RWSE [$ms^{-1}$] ')
+axs[0].set_ylabel('RWSE  $\dot x_{e}$ (m/s)')
 axs[0].set_ylim([0,2.6])
 axs[0].yaxis.set_ticks(np.arange(0, 2.6, 0.5))
 
 axs[1].set_xlabel('Time horizon (s)')
-axs[1].set_ylabel('$\dot y_{v0}$ RWSE [$ms^{-1}$] ')
+axs[1].set_ylabel('RWSE  $\dot y_{e}$ (m/s)')
 axs[1].set_ylim([0,1.75])
 axs[1].yaxis.set_ticks(np.arange(0, 1.76, 0.25))
 legends = ['$N=1$','$N=3$','$N=7$', '$N=10$']
@@ -199,14 +201,14 @@ exp_names = []
 for exp in exps:
     for density in densities:
         exp_names.append(exp+density)
-legends = ['$\delta t=0.1s$', '$\delta t=0.2s$','$\delta t=0.3s$']
+legends = ['$\delta t=0.1\;s$', '$\delta t=0.2\;s$','$\delta t=0.3\;s$']
 axs[0].set_xlabel('Time horizon (s)')
-axs[0].set_ylabel('$\dot x_{v0}$ RWSE [$ms^{-1}$] ')
+axs[0].set_ylabel('RWSE  $\dot x_{e}$ (m/s)')
 axs[0].set_ylim([0,1.75])
 # axs[0].yaxis.set_ticks(np.arange(0, 2.6, 0.25))
 
 axs[1].set_xlabel('Time horizon (s)')
-axs[1].set_ylabel('$\dot y_{v0}$ RWSE [$ms^{-1}$] ')
+axs[1].set_ylabel('RWSE  $\dot y_{e}$ (m/s)')
 axs[1].set_ylim([0,1])
 axs[1].yaxis.set_ticks(np.arange(0, 1.1, 0.25))
 
@@ -217,4 +219,4 @@ for key in range(2):
     axs[key].grid(axis='y')
 axs[0].legend(legends)
 plt.tight_layout()
-plt.savefig("step_size_effect.png", dpi=500)
+# plt.savefig("step_size_effect.png", dpi=500)
